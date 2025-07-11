@@ -22,9 +22,9 @@ const registerUser = asyncHandler(async(req,res)=>{
     //step 7:remove passwd and refresh token field from response
     //step 8:check for user creation response and agr hogya h to return respinse and nhi hua to error bhejo
 
-    const {fullName,email,username,password} = req.body
+    const {fullname,email,username,password} = req.body
 
-    if(fullName===""){
+    if(fullname===""){
         throw new ApiError(400,"fullName is required");
     }
     if(email===""){
@@ -37,7 +37,7 @@ const registerUser = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"password is required");
     }
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{username},{email}]
     })
 
@@ -47,8 +47,25 @@ const registerUser = asyncHandler(async(req,res)=>{
     }
 
     //file lena
-    const avatarLocalPath= req.files?.avatar[0]?.path
-    const coverImageLocalPath= req.files?.coverImage[0]?.path
+    // const avatarLocalPath= req.files?.avatar[0]?.path
+    // const coverImageLocalPath= req.files?.coverImage[0]?.path
+
+    // console.log("REQ.FILES: ", req.files);
+
+    const avatarFileArray = req.files?.avatar;
+    const coverImageFileArray = req.files?.coverImage;
+
+    if (!avatarFileArray || avatarFileArray.length === 0) {
+        throw new ApiError(400, "Avatar is required");
+    }
+
+    const avatarLocalPath = avatarFileArray[0].path;
+    const coverImageLocalPath = coverImageFileArray?.[0]?.path;
+
+    // console.log("Avatar path:", avatarLocalPath);
+    // console.log("Cover path:", coverImageLocalPath);
+
+
 
     if(!avatarLocalPath){
         throw new ApiError(400,"Avatar is required");
@@ -60,12 +77,12 @@ const registerUser = asyncHandler(async(req,res)=>{
     if(!avatar){
         throw new ApiError(400,"Avatar is required");
     }
-    if(!avatar){
-        throw new ApiError(400,"Avatar is required");
-    }
+    // if(!avatar){
+    //     throw new ApiError(400,"Avatar is required");
+    // }
 
     const user = await User.create({
-        fullName,
+        fullname,
         avatar:avatar.url,
         coverImage: coverImage?.url || "",
         email,
